@@ -318,12 +318,16 @@
 
     // 主交互
     function pokeNaiwa(e) {
-      if (isAnimating) return;
-      isAnimating = true;
-
       // 计数
       count++;
       counter.textContent = count;
+
+      // 播放笑声（不受冷却限制，每次点击都会叠加）
+      playLaugh();
+
+      // 以下视觉效果有短冷却，防止连点太花
+      if (isAnimating) return;
+      isAnimating = true;
 
       // 获取点击位置（相对于视口）
       const clientX = e.clientX || (e.touches && e.touches[0].clientX) || img.getBoundingClientRect().left + img.offsetWidth / 2;
@@ -340,11 +344,8 @@
       // 屏幕震动
       triggerScreenShake();
 
-      // 播放笑声
-      playLaugh();
-
       // 冷却
-      setTimeout(() => { isAnimating = false; }, 400);
+      setTimeout(() => { isAnimating = false; }, 300);
     }
 
     // 绑定事件
