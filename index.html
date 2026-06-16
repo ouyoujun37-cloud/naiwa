@@ -234,9 +234,9 @@
     const counter = document.getElementById('count');
     const body = document.body;
 
-    // 笑声
-    const laughAudio = new Audio('laugh.mp3');
-    laughAudio.preload = 'auto';
+    // 笑声 — 每次新建 Audio 以实现叠加播放
+    const laughPool = [];
+    const MAX_POOL = 10; // 保留最近 10 个音效实例，防止无限堆积
 
     // 笑文字库
     const laughTexts = [
@@ -303,11 +303,17 @@
       setTimeout(() => document.documentElement.classList.remove('shaking'), 500);
     }
 
-    // 播放笑声
+    // 播放笑声（每次新建 Audio，支持叠加）
     function playLaugh() {
-      // 重置音频实现快速连续点击
-      laughAudio.currentTime = 0;
-      laughAudio.play().catch(() => {}); // 忽略自动播放被拦截的错误
+      const audio = new Audio('laugh.mp3');
+      laughPool.push(audio);
+      // 超过上限时清理最旧的已结束实例
+      while (laughPool.length > MAX_POOL) {
+        const old = laughPool.shift();
+        old.pause();
+        old.src = '';
+      }
+      audio.play().catch(() => {});
     }
 
     // 主交互
@@ -357,15 +363,6 @@
       const cy = rect.top + rect.height / 2;
       pokeNaiwa({ clientX: cx, clientY: cy });
     });
-
-    // 首次加载时允许音频
-    // 部分浏览器需要用户交互后才能播放音频
-    document.addEventListener('click', function unlockAudio() {
-      laughAudio.play().then(() => {
-        laughAudio.pause();
-        laughAudio.currentTime = 0;
-      }).catch(() => {});
-    }, { once: true });
 
     console.log('🐸 奶蛙捧腹大笑 — 准备好了！戳奶蛙的肚子吧！');
   })();
